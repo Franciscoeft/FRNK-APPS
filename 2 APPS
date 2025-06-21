@@ -1,13 +1,36 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Filtro de Datos TXT</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FRNK APPS - Herramientas</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; background: #f4f4f4; }
-    textarea, button { width: 100%; margin: 1rem 0; padding: 0.5rem; font-size: 1rem; }
-    #resultado { white-space: pre; background: #fff; padding: 1rem; border: 1px solid #ccc; }
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 2rem; }
+    nav { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    button.tab-btn {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      background-color: #ddd;
+      border: none;
+      border-radius: 4px;
+    }
+    button.tab-btn.active {
+      background-color: #007BFF;
+      color: white;
+    }
+    section { display: none; }
+    section.active { display: block; }
+    textarea, input, button, select {
+      width: 100%; margin: 0.5rem 0; padding: 0.5rem; font-size: 1rem;
+    }
+    #output, #resultado {
+      white-space: pre;
+      background: #fff;
+      padding: 1rem;
+      border: 1px solid #ccc;
+      overflow: auto;
+      max-height: 300px;
+    }
     #toast {
       visibility: hidden;
       min-width: 200px;
@@ -26,144 +49,131 @@
       visibility: visible;
       animation: fadein 0.5s, fadeout 0.5s 2.5s;
     }
-    @keyframes fadein {
-      from { bottom: 0; opacity: 0; }
-      to { bottom: 30px; opacity: 1; }
-    }
-    @keyframes fadeout {
-      from { bottom: 30px; opacity: 1; }
-      to { bottom: 0; opacity: 0; }
-    }
-  </style>
-</head>
-<body><!DOCTYPE html>
-<!-- saved from url=(0049)file:///C:/Users/florf/Downloads/index%20(4).html -->
-<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MacroBot Frank</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 2rem;
-      background: #f0f4f8;
-      color: #333;
-    }
-    h1 {
-      text-align: center;
-    }
-    label, input {
-      display: block;
-      width: 100%;
-      margin-bottom: 1rem;
-    }
-    button {
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-    }
-    #output {
-      white-space: pre;
-      background: #fff;
-      padding: 1rem;
-      border: 1px solid #ccc;
-      overflow: auto;
-      max-height: 300px;
-    }
+    @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+    @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
   </style>
 </head>
 <body>
-  <h1>🚗 MacroBot Frank</h1>
-  <p>Sube un archivo <strong>.txt</strong> con un VIN y un CÓDIGO por línea, separados por tabulación. Se generará automáticamente un archivo .mac ajustado.</p>
-  <label for="fileInput">Selecciona tu archivo de VINs (.txt):</label>
-  <input type="file" id="fileInput" accept=".txt">
 
-  <button onclick="generarMacro()">Generar Macro</button>
+<h1>🛠️ FRNK APPS</h1>
+<nav>
+  <button class="tab-btn active" onclick="showTab('macro')">GENERAR MACRO ARMADO</button>
+  <button class="tab-btn" onclick="showTab('filtro')">GENERAR TXT PARA CCP</button>
+</nav>
+
+<section id="macro" class="active">
+  <h2>🚗 MacroBot Frank</h2>
+  <p>Sube un archivo <strong>.txt</strong> con un VIN y un CÓDIGO por línea (separados por tabulación).</p>
+  <input type="file" id="fileInput" accept=".txt" />
+  <button onclick="generarMacro()">GENERAR MACRO ARMADO</button>
   <a id="downloadLink" style="display:none" download="macro_vins_generado.mac">⬇ Descargar Macro .mac</a>
-
-  <h2>Vista previa:</h2>
+  <h3>Vista previa:</h3>
   <div id="output"></div>
+</section>
 
-  <script>
-    function generarMacro() {
-      const fileInput = document.getElementById("fileInput");
-      const output = document.getElementById("output");
-      const reader = new FileReader();
-
-      if (!fileInput.files[0]) return alert("Selecciona un archivo .txt con VINs y códigos");
-
-      reader.onload = function (e) {
-        const lines = e.target.result.trim().split(/\r?\n/).filter(l => l);
-        let macro = `<HAScript name="macro_vins_lineal" description="" timeout="60000" pausetime="300" promptall="true" blockinput="true" author="frank" creationdate="Jun 19, 2025" supressclearevents="false" usevars="false" ignorepauseforenhancedtn="true" delayifnotenhancedtn="0" ignorepausetimeforenhancedtn="true" continueontimeout="false">\n`;
-
-        lines.forEach((line, i) => {
-          const [vin, codigo] = line.split("\t");
-          const id = String(i + 1).padStart(3, '0');
-          const next = String(i + 2).padStart(3, '0');
-
-          macro += `\n    <screen name="Screen1_${id}" entryscreen="true" exitscreen="false" transient="false">\n        <description >\n            <oia status="NOTINHIBITED" optional="false" invertmatch="false" />\n        </description>\n        <actions>\n            <input value="[pf11]" row="0" col="0" movecursor="true" xlatehostkeys="true" encrypted="false" />\n        </actions>\n        <nextscreens timeout="0" >\n            <nextscreen name="Screen2_${id}" />\n        </nextscreens>\n    </screen>\n\n    <screen name="Screen2_${id}" entryscreen="false" exitscreen="false" transient="false">\n        <description >\n            <oia status="NOTINHIBITED" optional="false" invertmatch="false" />\n            <numfields number="163" optional="true" invertmatch="false" />\n            <numinputfields number="4" optional="true" invertmatch="false" />\n        </description>\n        <actions>\n            <input value="${vin}[up]${codigo}[down][down][down][down][down][down][down][down]061925[field+][enter]" row="0" col="0" movecursor="true" xlatehostkeys="true" encrypted="false" />\n        </actions>\n        <nextscreens timeout="0" >\n            <nextscreen name="Screen3_${id}" />\n        </nextscreens>\n    </screen>\n\n    <screen name="Screen3_${id}" entryscreen="false" exitscreen="false" transient="false">\n        <description >\n            <oia status="NOTINHIBITED" optional="false" invertmatch="false" />\n        </description>\n        <actions>\n            <input value="[enter]" row="0" col="0" movecursor="true" xlatehostkeys="true" encrypted="false" />\n        </actions>\n        <nextscreens timeout="0" >\n            <nextscreen name="Screen4_${id}" />\n        </nextscreens>\n    </screen>\n\n    <screen name="Screen4_${id}" entryscreen="false" exitscreen="false" transient="false">\n        <description >\n            <oia status="NOTINHIBITED" optional="false" invertmatch="false" />\n        </description>\n        <actions>\n            <input value="[pf5]" row="0" col="0" movecursor="true" xlatehostkeys="true" encrypted="false" />\n        </actions>\n        <nextscreens timeout="0" >\n            <nextscreen name="Screen1_${next}" />\n        </nextscreens>\n    </screen>`;
-        });
-
-        macro += `\n</HAScript>`;
-        output.textContent = macro;
-
-        const blob = new Blob([macro], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const link = document.getElementById("downloadLink");
-        link.href = url;
-        link.style.display = "inline-block";
-        link.textContent = "⬇ Descargar Macro .mac";
-      };
-
-      reader.readAsText(fileInput.files[0]);
-    }
-  </script>
-
-
-</body></html>
-
-  <h1>Filtrar líneas por VIN y número</h1>
-
-  <p><strong>Pega aquí tu listado (ej: M651674\t7):</strong></p>
-  <textarea id="entrada" rows="20" placeholder="Ejemplo:\nM651674\t6\nM651717\t7\nM651804\t7"></textarea>
-
-  <button onclick="filtrarYDescargar()">Filtrar y Descargar TXT</button>
+<section id="filtro">
+  <h2>🔎 Filtrar líneas por VIN y número</h2>
+  <textarea id="entrada" rows="15" placeholder="Ejemplo:
+M651674	6
+M651717	7"></textarea>
+  <button onclick="filtrarYDescargar()">GENERAR TXT PARA CCP</button>
   <button onclick="copiarResultado()">Copiar Resultado</button>
-
   <pre id="resultado"></pre>
   <div id="toast">Resultado copiado al portapapeles.</div>
+</section>
 
-  <script>
-    function filtrarYDescargar() {
-      const entrada = document.getElementById("entrada").value.trim().split(/\n+/);
-      const condiciones = entrada.map(linea => linea.trim().split(/\t/));
+<script>
+function showTab(tabId) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
+  document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
 
-      const resultado = condiciones.map(([vin, num]) => {
-        let linea = '';
-        if (num === '6') linea = `${vin},25101503,6,XUN,"9,510.00",8704319999,N,N,03`;
-        else if (num === '7') linea = `${vin},25101503,7,XUN,"11,095.00",8704319999,N,N,03`;
-        else if (num === '8') linea = `${vin},25101503,8,XUN,"12,680.00",8704319999,N,N,03`;
-        else linea = `${vin},NO ENCONTRADO`;
-        return linea;
-      });
+function generarMacro() {
+  const fileInput = document.getElementById("fileInput");
+  const output = document.getElementById("output");
+  const reader = new FileReader();
 
-      const contenido = resultado.join("\n");
-      document.getElementById("resultado").textContent = contenido;
+  if (!fileInput.files[0]) return alert("Selecciona un archivo .txt con VINs y códigos");
 
-      const blob = new Blob([contenido], { type: "text/plain" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = "filtrado.txt";
-      link.click();
-    }
+  reader.onload = function (e) {
+    const lines = e.target.result.trim().split(/\r?\n/).filter(l => l);
+    let macro = `<HAScript name="macro_vins_lineal" description="" timeout="60000" pausetime="300" promptall="true" blockinput="true" author="frank" creationdate="Jun 19, 2025" supressclearevents="false" usevars="false" ignorepauseforenhancedtn="true" delayifnotenhancedtn="0" ignorepausetimeforenhancedtn="true" continueontimeout="false">`;
 
-    function copiarResultado() {
-      const texto = document.getElementById("resultado").textContent;
-      navigator.clipboard.writeText(texto).then(() => {
-        const toast = document.getElementById("toast");
-        toast.className = "show";
-        setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-      });
-    }
-  </script>
+    lines.forEach((line, i) => {
+      const [vin, codigo] = line.split("\t");
+      const id = String(i + 1).padStart(3, '0');
+      const next = String(i + 2).padStart(3, '0');
+      macro += `
+    <screen name="Screen1_${id}" entryscreen="true" exitscreen="false" transient="false">
+      <description><oia status="NOTINHIBITED" optional="false" invertmatch="false" /></description>
+      <actions><input value="[pf11]" row="0" col="0" movecursor="true" xlatehostkeys="true" encrypted="false" /></actions>
+      <nextscreens timeout="0"><nextscreen name="Screen2_${id}" /></nextscreens>
+    </screen>
+    <screen name="Screen2_${id}" entryscreen="false" exitscreen="false" transient="false">
+      <description><oia status="NOTINHIBITED" optional="false" invertmatch="false" /><numfields number="163" optional="true" invertmatch="false" /><numinputfields number="4" optional="true" invertmatch="false" /></description>
+      <actions><input value="${vin}[up]${codigo}[down][down][down][down][down][down][down][down]061925[field+][enter]" row="0" col="0" movecursor="true" xlatehostkeys="true" encrypted="false" /></actions>
+      <nextscreens timeout="0"><nextscreen name="Screen3_${id}" /></nextscreens>
+    </screen>
+    <screen name="Screen3_${id}" entryscreen="false" exitscreen="false" transient="false">
+      <description><oia status="NOTINHIBITED" optional="false" invertmatch="false" /></description>
+      <actions><input value="[enter]" row="0" col="0" movecursor="true" xlatehostkeys="true" encrypted="false" /></actions>
+      <nextscreens timeout="0"><nextscreen name="Screen4_${id}" /></nextscreens>
+    </screen>
+    <screen name="Screen4_${id}" entryscreen="false" exitscreen="false" transient="false">
+      <description><oia status="NOTINHIBITED" optional="false" invertmatch="false" /></description>
+      <actions><input value="[pf5]" row="0" col="0" movecursor="true" xlatehostkeys="true" encrypted="false" /></actions>
+      <nextscreens timeout="0"><nextscreen name="Screen1_${next}" /></nextscreens>
+    </screen>`;
+    });
+
+    macro += `
+</HAScript>`;
+    output.textContent = macro;
+
+    const blob = new Blob([macro], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.getElementById("downloadLink");
+    link.href = url;
+    link.style.display = "inline-block";
+    link.textContent = "⬇ Descargar Macro .mac";
+  };
+
+  reader.readAsText(fileInput.files[0]);
+}
+
+function filtrarYDescargar() {
+  const entrada = document.getElementById("entrada").value.trim().split(/\n+/);
+  const condiciones = entrada.map(linea => linea.trim().split(/\t/));
+
+  const resultado = condiciones.map(([vin, num]) => {
+    let linea = '';
+    if (num === '6') linea = `${vin},25101503,6,XUN,"9,510.00",8704319999,N,N,03`;
+    else if (num === '7') linea = `${vin},25101503,7,XUN,"11,095.00",8704319999,N,N,03`;
+    else if (num === '8') linea = `${vin},25101503,8,XUN,"12,680.00",8704319999,N,N,03`;
+    else linea = `${vin},NO ENCONTRADO`;
+    return linea;
+  });
+
+  const contenido = resultado.join("\n");
+  document.getElementById("resultado").textContent = contenido;
+
+  const blob = new Blob([contenido], { type: "text/plain" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "filtrado.txt";
+  link.click();
+}
+
+function copiarResultado() {
+  const texto = document.getElementById("resultado").textContent;
+  navigator.clipboard.writeText(texto).then(() => {
+    const toast = document.getElementById("toast");
+    toast.className = "show";
+    setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+  });
+}
+</script>
 </body>
 </html>
